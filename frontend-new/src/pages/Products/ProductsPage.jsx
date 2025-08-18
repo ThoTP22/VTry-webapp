@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState, useMemo, useEffect } from "react";
+import { useSelector } from "react-redux";
 import {
   Typography,
   Row,
@@ -11,17 +11,17 @@ import {
   Space,
   Empty,
   Tag,
-  Divider
-} from 'antd';
+  Divider,
+} from "antd";
 import {
   SearchOutlined,
   FilterOutlined,
   ClearOutlined,
-  ShoppingCartOutlined
-} from '@ant-design/icons';
-import ProductCard from '../../components/ProductCard/ProductCard';
-import { useProducts } from '../../hooks/useProducts';
-import { PRODUCT_CATEGORIES } from '../../constants';
+  ShoppingCartOutlined,
+} from "@ant-design/icons";
+import ProductCard from "../../components/ProductCard/ProductCard";
+import { useProducts } from "../../hooks/useProducts";
+import { PRODUCT_CATEGORIES } from "../../constants";
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -29,16 +29,16 @@ const { Search } = Input;
 
 const ProductsPage = () => {
   const { products, loading, fetchProducts, error } = useProducts();
-  const cartItems = useSelector(state => state.cart.items);
-  
+  const cartItems = useSelector((state) => state.cart.items);
+
   // Local state for filtering and search
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [sortBy, setSortBy] = useState('name');
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+
   // Fetch products when component mounts
   useEffect(() => {
-    console.log('ProductsPage: Fetching products from API');
+    console.log("ProductsPage: Fetching products from API");
     fetchProducts();
   }, []); // Empty dependency array to run only once on mount
 
@@ -49,7 +49,9 @@ const ProductsPage = () => {
 
   // Get unique categories from products
   const availableCategories = useMemo(() => {
-    const categories = [...new Set(displayProducts.map(product => product.category))];
+    const categories = [
+      ...new Set(displayProducts.map((product) => product.category)),
+    ];
     return categories.sort();
   }, [displayProducts]);
 
@@ -59,30 +61,35 @@ const ProductsPage = () => {
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand?.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          product.brand?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Filter by category
     if (selectedCategory) {
-      filtered = filtered.filter(product => product.category === selectedCategory);
+      filtered = filtered.filter(
+        (product) => product.category === selectedCategory
+      );
     }
 
     // Sort products
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'name':
+        case "name":
           return a.name.localeCompare(b.name);
-        case 'price-low':
+        case "price-low":
           return a.price - b.price;
-        case 'price-high':
+        case "price-high":
           return b.price - a.price;
-        case 'newest':
+        case "newest":
           return new Date(b.created_at) - new Date(a.created_at);
-        case 'oldest':
+        case "oldest":
           return new Date(a.created_at) - new Date(b.created_at);
         default:
           return 0;
@@ -109,42 +116,43 @@ const ProductsPage = () => {
 
   // Clear all filters
   const handleClearFilters = () => {
-    setSearchTerm('');
-    setSelectedCategory('');
-    setSortBy('name');
+    setSearchTerm("");
+    setSelectedCategory("");
+    setSortBy("name");
   };
 
   // Get category color
   const getCategoryColor = (category) => {
     const colors = {
-      'hoodies': 'purple',
-      'shirts': 'cyan',
-      'pants': 'orange',
-      'shoes': 'red',
-      'men': 'blue',
-      'women': 'pink',
-      'kids': 'green'
+      hoodies: "purple",
+      shirts: "cyan",
+      pants: "orange",
+      shoes: "red",
+      men: "blue",
+      women: "pink",
+      kids: "green",
     };
-    return colors[category.toLowerCase()] || 'default';
+    return colors[category.toLowerCase()] || "default";
   };
 
   // Helper function to get proper image URL
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return '/img/logo.png';
-    
+    if (!imageUrl) return "/img/logo.png";
+
     // If it's already a full URL, return as is
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
       return imageUrl;
     }
-    
+
     // If it's a relative path starting with /, prepend backend URL
-    if (imageUrl.startsWith('/')) {
-      const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5194';
+    if (imageUrl.startsWith("/")) {
+      const apiUrl =
+        process.env.REACT_APP_BACKEND_URL || "http://localhost:5194";
       return `${apiUrl}${imageUrl}`;
     }
-    
+
     // If it's just a filename, construct the full path to backend images
-    const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5194';
+    const apiUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5194";
     return `${apiUrl}/api/images/${imageUrl}`;
   };
 
@@ -157,21 +165,21 @@ const ProductsPage = () => {
     if (product.image) {
       return getImageUrl(product.image); // This is local image
     }
-    return '/img/logo.png';
+    return "/img/logo.png";
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Header */}
+        {/* Header */}
         <div className="text-center mb-8">
-        <Title level={1} className="text-4xl font-bold text-gray-900 mb-4">
-          Product Catalog
-        </Title>
+          <Title level={1} className="text-4xl font-bold text-gray-900 mb-4">
+            Product Catalog
+          </Title>
           <Paragraph className="text-lg text-gray-600 max-w-2xl mx-auto">
             Explore our diverse collection of high quality products
-        </Paragraph>
-      </div>
+          </Paragraph>
+        </div>
 
         {/* Filters and Search */}
         <Card className="mb-6 shadow-sm">
@@ -198,7 +206,7 @@ const ProductsPage = () => {
                   className="w-full"
                   allowClear
                 >
-                  {availableCategories.map(category => (
+                  {availableCategories.map((category) => (
                     <Option key={category} value={category}>
                       <Tag color={getCategoryColor(category)} className="mr-2">
                         {category}
@@ -241,21 +249,23 @@ const ProductsPage = () => {
                 <Button
                   icon={<ClearOutlined />}
                   onClick={handleClearFilters}
-                  disabled={!searchTerm && !selectedCategory && sortBy === 'name'}
+                  disabled={
+                    !searchTerm && !selectedCategory && sortBy === "name"
+                  }
                 >
                   Clear Filters
                 </Button>
               </Col>
             </Row>
-        </div>
+          </div>
         </Card>
 
         {/* Products Display */}
-      {loading ? (
+        {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
             <Text type="secondary">Loading products...</Text>
-        </div>
+          </div>
         ) : error ? (
           <div className="text-center py-12">
             <div className="text-red-500 text-xl mb-4">⚠️</div>
@@ -271,59 +281,68 @@ const ProductsPage = () => {
             {/* Category-based sections */}
             {!selectedCategory && (
               <div className="space-y-8">
-                {availableCategories.map(category => {
-                  const categoryProducts = filteredProducts.filter(p => p.category === category);
+                {availableCategories.map((category) => {
+                  const categoryProducts = filteredProducts.filter(
+                    (p) => p.category === category
+                  );
                   if (categoryProducts.length === 0) return null;
-                  
+
                   return (
                     <div key={category} className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Title level={3} className="flex items-center">
-                          <Tag color={getCategoryColor(category)} size="large" className="mr-3">
+                          <Tag
+                            color={getCategoryColor(category)}
+                            size="large"
+                            className="mr-3"
+                          >
                             {category}
                           </Tag>
                           {category}
-              </Title>
-                        <Button type="link" href={`/catalog?category=${category}`}>
+                        </Title>
+                        <Button
+                          type="link"
+                          href={`/catalog?category=${category}`}
+                        >
                           View All
                         </Button>
                       </div>
-                      
+
                       <div className="overflow-x-auto">
                         <Row gutter={[16, 16]} className="flex-nowrap">
                           {categoryProducts.slice(0, 4).map((product) => (
                             <Col key={product._id} flex="0 0 300px">
-                    <ProductCard
-                      product={product}
+                              <ProductCard
+                                product={product}
                                 onAddToWishlist={(product) => {
-                                  console.log('Added to wishlist:', product);
+                                  console.log("Added to wishlist:", product);
                                 }}
                                 onVirtualTryOn={(product) => {
-                                  console.log('Virtual try-on:', product);
+                                  console.log("Virtual try-on:", product);
                                 }}
-                    />
-                  </Col>
-                ))}
-              </Row>
-            </div>
+                              />
+                            </Col>
+                          ))}
+                        </Row>
+                      </div>
                     </div>
                   );
                 })}
-            </div>
-          )}
+              </div>
+            )}
 
             {/* Grid view when category is selected */}
             {selectedCategory && (
               <Row gutter={[24, 24]}>
                 {filteredProducts.map((product) => (
                   <Col key={product._id} xs={24} sm={12} md={8} lg={6}>
-                      <ProductCard
-                        product={product}
+                    <ProductCard
+                      product={product}
                       onAddToWishlist={(product) => {
-                        console.log('Added to wishlist:', product);
+                        console.log("Added to wishlist:", product);
                       }}
                       onVirtualTryOn={(product) => {
-                        console.log('Virtual try-on:', product);
+                        console.log("Virtual try-on:", product);
                       }}
                     />
                   </Col>
@@ -336,49 +355,25 @@ const ProductsPage = () => {
             description={
               <div className="space-y-2">
                 <Text type="secondary">
-                  {searchTerm || selectedCategory 
-                    ? `No products found for "${searchTerm || selectedCategory}"`
-                    : 'No products found'
-                  }
+                  {searchTerm || selectedCategory
+                    ? `No products found for "${
+                        searchTerm || selectedCategory
+                      }"`
+                    : "No products found"}
                 </Text>
                 {(searchTerm || selectedCategory) && (
                   <Button type="primary" onClick={handleClearFilters}>
-                      Clear Filters
+                    Clear Filters
                   </Button>
                 )}
-                </div>
+              </div>
             }
             className="py-12"
           />
         )}
 
         {/* Cart Summary */}
-        {cartItems.length > 0 && (
-          <Card className="mt-8 bg-blue-50 border-blue-200">
-            <Row justify="space-between" align="middle">
-              <Col>
-                <Space>
-                  <ShoppingCartOutlined className="text-blue-500 text-xl" />
-                  <div>
-                    <Text strong className="text-blue-800">
-                      Your Cart
-                    </Text>
-                    <br />
-                    <Text type="secondary" className="text-blue-600">
-                      {cartItems.length} products in your cart
-                    </Text>
-                    </div>
-                </Space>
-              </Col>
-              <Col>
-                <Button type="primary" size="large" href="/cart">
-                  View Cart
-                </Button>
-              </Col>
-            </Row>
-          </Card>
-        )}
-              </div>
+      </div>
     </div>
   );
 };

@@ -91,6 +91,14 @@ const API_ENDPOINTS = {
     get ANALYSIS() { return `${getBackendUrl()}/visual-tryon/analysis`; }, // Legacy endpoint
   },
 
+  // Proxy endpoints for CORS bypass
+  PROXY: {
+    IMAGE: (imageUrl) => `${getBackendUrl()}/proxy/image?url=${encodeURIComponent(imageUrl)}`,
+  },
+
+  // Base URL for constructing proxy URLs
+  get BASE_URL() { return getBackendUrl().replace('/api', ''); },
+
   // User profile endpoints (for future implementation)
   USER: {
     // TODO: Implement when backend has user profile routes

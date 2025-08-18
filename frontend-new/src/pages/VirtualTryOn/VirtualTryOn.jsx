@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_ENDPOINTS from '../../services/apiEndpoints';
-import { Button, Card, Row, Col, Upload, Steps, Space, Typography, message, Spin, Radio } from 'antd';
+import { Button, Card, Row, Col, Upload, Steps, Space, Typography, message, Spin, Radio, Image } from 'antd';
 import { 
   UploadOutlined, 
   ReloadOutlined, 
@@ -36,6 +36,7 @@ const VirtualTryOn = () => {
   useEffect(() => {
     // Kiểm tra dữ liệu thử đồ đầy đủ (sản phẩm + ảnh người dùng)
     const tryOnData = localStorage.getItem('tryOnData');
+    
     if (tryOnData) {
       try {
         const data = JSON.parse(tryOnData);
@@ -101,27 +102,14 @@ const VirtualTryOn = () => {
                   // Lưu URL gốc để debug
                   setTryOnResultRaw(imageUrl);
                   
-                  // Tải ảnh qua fetch API để tránh vấn đề CORS
-                  setIsFetchingImage(true);
-                  fetch(imageUrl)
-                    .then(res => {
-                      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-                      return res.blob();
-                    })
-                    .then(blob => {
-                      const blobUrl = URL.createObjectURL(blob);
-                      setTryOnResultBlob(blobUrl);
-                      setTryOnResult(blobUrl);
-                      message.success('Try-On completed!');
-                    })
-                    .catch(error => {
-                      console.error('Error fetching image:', error);
-                      // Fallback to direct URL with timestamp if blob approach fails
-                      setTryOnResult(`${imageUrl}?t=${Date.now()}`);
-                    })
-                    .finally(() => {
-                      setIsFetchingImage(false);
-                    });
+                  // Sử dụng trực tiếp URL S3 như ProductCard
+                  console.log('Got S3 image URL:', imageUrl);
+                  setTryOnResult(imageUrl);
+                  setTryOnResultRaw(imageUrl);
+                  setIsFetchingImage(false);
+                  setIsProcessing(false);
+                  setLoadError(false);
+                  message.success('Try-On completed!');
                 } else {
                   throw new Error('No result from API');
                 }
@@ -160,41 +148,40 @@ const VirtualTryOn = () => {
     }
   }, [numSamples, tryOnMode]);
 
-  // Sample luxury products for try-on
-  const luxuryProducts = [
-    {
-      id: 1,
-      name: "Classic Black Blazer",
-      brand: "Chanel",
-      price: 3500,
-      image: "/api/placeholder/300/400",
-      category: "Blazers"
-    },
-    {
-      id: 2,
-      name: "Silk Evening Dress",
-      brand: "Dior",
-      price: 4200,
-      image: "/api/placeholder/300/400",
-      category: "Dresses"
-    },
-    {
-      id: 3,
-      name: "Cashmere Coat",
-      brand: "Hermès",
-      price: 5800,
-      image: "/api/placeholder/300/400",
-      category: "Coats"
-    },
-    {
-      id: 4,
-      name: "Designer Handbag",
-      brand: "Louis Vuitton",
-      price: 2800,
-      image: "/api/placeholder/300/400",
-      category: "Accessories"
+  // Lấy sản phẩm từ API
+  const [luxuryProducts, setLuxuryProducts] = useState([]);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        console.log('🔍 Fetching products from API...');
+        const products = await (await import('../../api/productsAPI')).default.getAllProducts();
+        console.log('🔍 API Response:', products);
+        
+        // Nếu API trả về object có thuộc tính products, lấy ra mảng đó
+        if (Array.isArray(products)) {
+          console.log('✅ Setting products array directly:', products.length, 'items');
+          setLuxuryProducts(products);
+        } else if (products && Array.isArray(products.result)) {
+          console.log('✅ Setting products from .result property:', products.result.length, 'items');
+          setLuxuryProducts(products.result);
+        } else if (products && Array.isArray(products.products)) {
+          console.log('✅ Setting products from .products property:', products.products.length, 'items');
+          setLuxuryProducts(products.products);
+        } else if (products && Array.isArray(products.data)) {
+          console.log('✅ Setting products from .data property:', products.data.length, 'items');
+          setLuxuryProducts(products.data);
+        } else {
+          console.warn('❌ Products response format not recognized:', products);
+          setLuxuryProducts([]);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching products:', error);
+        setLuxuryProducts([]);
+      }
     }
-  ];
+    fetchProducts();
+  }, []);
 
   const handleUpload = (file) => {
     const reader = new FileReader();
@@ -233,7 +220,20 @@ const VirtualTryOn = () => {
       // Chuẩn bị FormData cho API request
       const formData = new FormData();
       formData.append('file', userPhotoFile); // Phải đặt tên là 'file' theo middleware backend
-      formData.append('garment_image_url', selectedProduct.imageUrl || selectedProduct.image);
+      
+      // Kiểm tra các thuộc tính có thể có của sản phẩm
+      const garmentImageUrl = selectedProduct.imageUrl || 
+                             selectedProduct.image || 
+                             selectedProduct.images?.[0] || 
+                             selectedProduct.productImages?.[0];
+      
+      if (!garmentImageUrl) {
+        throw new Error('Product image URL not found');
+      }
+      
+      console.log('Using garment image URL:', garmentImageUrl);
+      
+      formData.append('garment_image_url', garmentImageUrl);
       formData.append('mode', tryOnMode);
       formData.append('num_samples', numSamples);
       formData.append('output_format', 'jpeg');
@@ -268,26 +268,16 @@ const VirtualTryOn = () => {
         
         // Tải ảnh qua fetch API để tránh vấn đề CORS
         setIsFetchingImage(true);
-        fetch(imageUrl)
-          .then(res => {
-            if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-            return res.blob();
-          })
-          .then(blob => {
-            const blobUrl = URL.createObjectURL(blob);
-            setTryOnResultBlob(blobUrl);
-            setTryOnResult(blobUrl);
-            message.success('Try-On completed!');
-          })
-          .catch(error => {
-            console.error('Error fetching image:', error);
-            // Fallback to direct URL with timestamp
-            setTryOnResult(`${imageUrl}?t=${Date.now()}`);
-          })
-          .finally(() => {
-            setIsFetchingImage(false);
-            setIsProcessing(false);
-          });
+        console.log('Processing try-on result, imageUrl:', imageUrl);
+        
+        // Sử dụng trực tiếp URL S3 như ProductCard
+        console.log('Got S3 image URL:', imageUrl);
+        setTryOnResult(imageUrl);
+        setTryOnResultRaw(imageUrl);
+        setIsFetchingImage(false);
+        setIsProcessing(false);
+        setLoadError(false);
+        message.success('Try-On completed!');
       } else {
         throw new Error('No result from API');
       }
@@ -422,16 +412,19 @@ const VirtualTryOn = () => {
 
                   <Row gutter={[16, 16]}>
                     {luxuryProducts.map(product => (
-                      <Col xs={12} sm={6} key={product.id}>
+                      <Col xs={12} sm={6} key={product._id || product.id}>
                         <Card
                           hoverable
-                          className={`luxury-product-selector ${selectedProduct?.id === product.id ? 'selected' : ''}`}
+                          className={`luxury-product-selector ${selectedProduct?._id === product._id ? 'selected' : ''}`}
                           cover={
                             <div className="aspect-[3/4] bg-luxury-lightgrey">
                               <img
-                                src={product.image}
+                                src={product.imageUrl || product.image || '/api/placeholder/300/400'}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.src = '/api/placeholder/300/400';
+                                }}
                               />
                             </div>
                           }
@@ -553,7 +546,7 @@ const VirtualTryOn = () => {
                   </Title>
                   
                   <div className="space-y-6">
-                    <Space size="middle">
+                    <Space size="middle" wrap>
                       <Button
                         icon={<DownloadOutlined />}
                         className="border-luxury-darkgrey text-luxury-darkgrey hover:border-luxury-black hover:text-luxury-black rounded-luxury"
@@ -587,6 +580,12 @@ const VirtualTryOn = () => {
                       >
                         Add to Cart
                       </Button>
+                      <Button
+                        onClick={() => window.open(tryOnResult, '_blank')}
+                        className="border-blue-500 text-blue-500 hover:border-blue-600 hover:text-blue-600 rounded-luxury"
+                      >
+                        View Full Size
+                      </Button>
                     </Space>
                     
                     <Button
@@ -605,10 +604,10 @@ const VirtualTryOn = () => {
 
           {/* Right Panel - Preview */}
           <Col xs={24} lg={12}>
-            <Card className="luxury-card h-full" bodyStyle={{ padding: '0' }}>
-              <div className="h-full bg-luxury-lightgrey rounded-luxury flex items-center justify-center relative overflow-hidden">
+            <Card className="luxury-card h-full" bodyStyle={{ padding: '0', height: '600px' }}>
+              <div className="h-full bg-luxury-lightgrey rounded-luxury flex items-center justify-center relative overflow-hidden" style={{ minHeight: '600px' }}>
                 {/* User Photo Preview */}
-                {userPhoto && currentStep >= 1 && (
+                {userPhoto && currentStep >= 1 && currentStep < 3 && (
                   <div className="absolute inset-0">
                     <img
                       src={userPhoto}
@@ -620,7 +619,7 @@ const VirtualTryOn = () => {
 
                 {/* Try-on Result */}
                 {currentStep === 3 && (
-                  <div className="absolute inset-0">
+                  <div className="absolute inset-0 w-full h-full">
                     {isFetchingImage && (
                       <div className="absolute inset-0 flex items-center justify-center bg-luxury-lightgrey/80 z-10">
                         <div className="text-center">
@@ -631,54 +630,119 @@ const VirtualTryOn = () => {
                     )}
                     
                     {tryOnResult && !isProcessing && (
-                      <img
-                        src={tryOnResult}
-                        alt="Try-on result"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          console.error('Image failed to load:', e);
-                          setLoadError(true);
-                        }}
-                      />
+                      <div className="w-full h-full relative bg-white">
+                        {/* Hiển thị ảnh kết quả */}
+                        <img
+                          alt="Try-on result"
+                          src={tryOnResult}
+                          className="w-full h-full object-contain"
+                          onLoad={() => {
+                            console.log('✅ Image loaded successfully:', tryOnResult);
+                            setLoadError(false);
+                          }}
+                          onError={(e) => {
+                            console.error('❌ Image failed to load:', e);
+                            setLoadError(true);
+                          }}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                            display: 'block',
+                            maxWidth: '100%',
+                            maxHeight: '100%'
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Show a message when no result */}
+                    {!tryOnResult && !isProcessing && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-red-100">
+                        <div className="text-center text-red-600">
+                          <p className="font-bold">No Try-On Result!</p>
+                          <p>Please try the virtual try-on process again.</p>
+                        </div>
+                      </div>
                     )}
                     
                     {loadError && (
-                      <div className="absolute inset-0 bg-red-100 bg-opacity-80 flex flex-col items-center justify-center p-4 text-red-600">
-                        <p className="font-bold mb-2">Cannot load image</p>
-                        <p className="text-sm mb-4">URL: {tryOnResultRaw}</p>
-                        <div className="flex space-x-2">
-                          <Button 
-                            onClick={() => window.open(tryOnResultRaw, '_blank')}
-                            type="primary" 
-                            danger
-                          >
-                            Open image in new tab
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              setLoadError(false);
-                              // Thử tải lại với phương pháp blob
-                              if (tryOnResultRaw) {
-                                setIsFetchingImage(true);
-                                fetch(tryOnResultRaw)
-                                  .then(res => res.blob())
-                                  .then(blob => {
-                                    const blobUrl = URL.createObjectURL(blob);
-                                    setTryOnResultBlob(blobUrl);
-                                    setTryOnResult(blobUrl);
-                                  })
-                                  .catch(err => {
-                                    console.error('Error retrying image load:', err);
-                                    setLoadError(true);
-                                  })
-                                  .finally(() => {
-                                    setIsFetchingImage(false);
-                                  });
-                              }
-                            }}
-                          >
-                            Try Again
-                          </Button>
+                      <div className="absolute inset-0 bg-red-50 bg-opacity-95 flex flex-col items-center justify-center p-6 text-red-700">
+                        <div className="max-w-md text-center space-y-4">
+                          <div className="text-lg font-bold">🖼️ Image Display Issue</div>
+                          <div className="text-sm">
+                            The image was processed successfully but cannot be displayed inline.
+                          </div>
+                          
+                          {/* Direct image test */}
+                          <div className="border border-gray-300 p-2 bg-white rounded">
+                            <div className="text-xs text-gray-600 mb-2">Direct URL Test:</div>
+                            <img 
+                              src={tryOnResultRaw} 
+                              alt="Direct test"
+                              className="w-32 h-32 object-cover mx-auto border"
+                              onLoad={() => console.log('✅ Direct URL test successful')}
+                              onError={() => console.log('❌ Direct URL test failed')}
+                            />
+                          </div>
+                          
+                          <div className="text-xs font-mono bg-gray-100 p-2 rounded break-all max-h-20 overflow-y-auto">
+                            {tryOnResultRaw}
+                          </div>
+                          
+                          <div className="grid grid-cols-1 gap-2 w-full">
+                            <Button 
+                              onClick={() => window.open(tryOnResultRaw, '_blank')}
+                              type="primary"
+                              size="small"
+                              className="w-full"
+                            >
+                              🔗 Open in new tab
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setLoadError(false);
+                                // Force reload với timestamp
+                                const timestampUrl = `${tryOnResultRaw}?cache=${Date.now()}`;
+                                console.log('🔄 Forcing reload with:', timestampUrl);
+                                setTryOnResult(timestampUrl);
+                              }}
+                              size="small"
+                              className="w-full"
+                            >
+                              🔄 Force reload
+                            </Button>
+                            <Button
+                              onClick={async () => {
+                                try {
+                                  console.log('💾 Trying blob method...');
+                                  // Thử với different CORS modes
+                                  let response;
+                                  try {
+                                    response = await fetch(tryOnResultRaw, { mode: 'cors' });
+                                  } catch (corsErr) {
+                                    console.log('CORS failed, trying no-cors...');
+                                    response = await fetch(tryOnResultRaw, { mode: 'no-cors' });
+                                  }
+                                  
+                                  const blob = await response.blob();
+                                  const objectUrl = URL.createObjectURL(blob);
+                                  console.log('✅ Created blob URL:', objectUrl);
+                                  setTryOnResult(objectUrl);
+                                  setTryOnResultBlob(objectUrl);
+                                  setLoadError(false);
+                                  message.success('Image loaded via blob!');
+                                } catch (err) {
+                                  console.error('Blob method failed:', err);
+                                  message.error('Blob method failed. Try "Open in new tab".');
+                                }
+                              }}
+                              size="small"
+                              className="w-full"
+                            >
+                              💾 Try blob download
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     )}
