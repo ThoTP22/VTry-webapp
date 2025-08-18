@@ -22,7 +22,8 @@ import {
   MenuOutlined,
   HomeOutlined,
   AppstoreOutlined,
-  ExperimentOutlined
+  ExperimentOutlined,
+  StarOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../hooks/useAuth';
 import { selectCartItemCount } from '../../store/cartSlice';
@@ -110,6 +111,13 @@ const Navbar = () => {
       icon: <ExperimentOutlined />,
       label: 'Virtual Try-On',
       onClick: () => navigate('/virtual-tryon'),
+    },
+
+    {
+      key: 'ratings',
+      icon: <StarOutlined />,
+      label: 'Ratings',
+      onClick: () => navigate('/ratings'),
     },
   ];
 

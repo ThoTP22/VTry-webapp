@@ -12,6 +12,7 @@ import testRouter from './routes/test.routes'
 import visualTryonRoute from './routes/visualTryon.routes'
 import swaggerUi from 'swagger-ui-express'
 import { specs, swaggerUiOptions } from './config/swagger'
+import ratingRoutes from './routes/rating.routes'
 
 config()
 
@@ -42,6 +43,7 @@ app.use('/api/orders', orderRouter)
 app.use('/api/payments', paymentRouter)
 app.use('/api/visual-tryon', visualTryonRoute)
 app.use('/api/test', testRouter)
+app.use('/api/ratings', ratingRoutes)
 
 // Root endpoint for API info
 app.get('/', (req, res) => {

@@ -91,6 +91,13 @@ const API_ENDPOINTS = {
     get ANALYSIS() { return `${getBackendUrl()}/visual-tryon/analysis`; }, // Legacy endpoint
   },
 
+  // Ratings endpoints
+  RATINGS: {
+    get CREATE() { return `${getBackendUrl()}/ratings/create`; },
+    get GET_ALL() { return `${getBackendUrl()}/ratings/all`; },
+    DELETE: (id) => `${getBackendUrl()}/ratings/delete/${id}`,
+  },
+
   // User profile endpoints (for future implementation)
   USER: {
     // TODO: Implement when backend has user profile routes
