@@ -1,7 +1,7 @@
 import { config } from 'dotenv'
 import databaseService from './services/database.services'
 import express from 'express'
-import cors from 'cors'
+import cors, { CorsOptions } from 'cors'
 import userRouter from './routes/users.routes'
 import { defaultErrorHandler } from './middlewares/error.middlewares'
 import productRouter from './routes/products.routes'
@@ -22,7 +22,35 @@ const app = express()
 
 const port = process.env.PORT || 4000
 
-app.use(cors())
+// CORS configuration
+const corsOriginsEnv = process.env.CORS_ORIGINS
+const defaultAllowedOrigins = [
+  'http://localhost:3000',
+  'https://www.vtry.store'
+]
+const allowedOrigins = corsOriginsEnv
+  ? corsOriginsEnv.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : defaultAllowedOrigins
+
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) {
+      // Allow non-browser requests or same-origin
+      return callback(null, true)
+    }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true)
+    }
+    return callback(new Error('Not allowed by CORS'))
+  },
+  credentials: true,
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204
+}
+
+app.use(cors(corsOptions))
+app.options('*', cors(corsOptions))
 
 app.use(express.json())
 
