@@ -5,7 +5,7 @@
  */
 
 const getBackendUrl = () => {
-  const url = 'http://vtry-webapp-production.up.railway.app/api';
+  const url = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5194/api';
   
   // Log URL for debugging (always log during development)
   console.log('getBackendUrl Debug:', {
@@ -89,13 +89,6 @@ const API_ENDPOINTS = {
   VIRTUAL_TRYON: {
     get TRYON() { return `${getBackendUrl()}/visual-tryon/tryon`; },
     get ANALYSIS() { return `${getBackendUrl()}/visual-tryon/analysis`; }, // Legacy endpoint
-  },
-
-  // Ratings endpoints
-  RATINGS: {
-    get CREATE() { return `${getBackendUrl()}/ratings/create`; },
-    get GET_ALL() { return `${getBackendUrl()}/ratings/all`; },
-    DELETE: (id) => `${getBackendUrl()}/ratings/delete/${id}`,
   },
 
   // User profile endpoints (for future implementation)
