@@ -2,6 +2,7 @@ import { Collection, Db, MongoClient } from 'mongodb'
 import { config } from 'dotenv'
 import User from '~/models/schemas/User.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
+import Rating from '~/models/schemas/Rating.schema'
 
 config()
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.w4ms8ju.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
@@ -35,6 +36,9 @@ class DatabaseService {
   }
   get refreshToken(): Collection<RefreshToken> {
     return this.db.collection(process.env.REFRESH_TOKEN_COLLECTION as string)
+  }
+  get ratings(): Collection<Rating> {
+    return this.db.collection(process.env.RATINGS_COLLECTION as string)
   }
 }
 
