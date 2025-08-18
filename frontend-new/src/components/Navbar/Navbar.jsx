@@ -192,7 +192,7 @@ const Navbar = () => {
                     />
                     <span className="hidden sm:inline">{user?.name || user?.email}</span>
                     {isAdmin && (
-                      <CrownOutlined className="bg-luxury-gold text-luxury-white" />
+                      <CrownOutlined className="text-xl text-luxury-white" />
                     )}
                   </Space>
                 </Button>
