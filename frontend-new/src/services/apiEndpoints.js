@@ -5,7 +5,7 @@
  */
 
 const getBackendUrl = () => {
-  const url = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5194/api';
+  const url = 'http://vtry-webapp-production.up.railway.app/api';
   
   // Log URL for debugging (always log during development)
   console.log('getBackendUrl Debug:', {

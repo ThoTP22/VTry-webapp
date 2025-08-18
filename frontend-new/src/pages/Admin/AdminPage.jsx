@@ -250,37 +250,18 @@ const AdminPage = () => {
         return false;
       }
 
-      // BƯỚC 2: Tạo FormData theo đúng format backend API
-      const formData = new FormData();
-      formData.append('image', file); // Backend expects 'image' field name
-
-      // BƯỚC 3: Lấy token để authentication
+      // BƯỚC 2: Lấy token để authentication
       const token = localStorage.getItem('access_token');
       if (!token) {
         message.error("Please login to upload images");
         return false;
       }
 
-      // BƯỚC 4: Gọi API upload
-      const response = await fetch('/api/images/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          // Không set Content-Type, để browser tự set với boundary cho multipart/form-data
-        },
-        body: formData
-      });
+      // BƯỚC 3: Gọi API upload thông qua ImagesAPI (sử dụng REACT_APP_API_BASE_URL)
+      const responseData = await ImagesAPI.uploadImage(file);
+      console.log('Upload response (ImagesAPI):', responseData);
 
-      // BƯỚC 5: Xử lý response
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Upload failed' }));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const responseData = await response.json();
-      console.log('Upload response:', responseData);
-
-      // BƯỚC 6: Kiểm tra response format từ backend
+      // BƯỚC 4: Kiểm tra response format từ backend
       if (responseData.result && responseData.result.url) {
         const imageData = {
           url: responseData.result.url,
