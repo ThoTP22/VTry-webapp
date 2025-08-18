@@ -23,6 +23,7 @@ import VirtualTryOn from './pages/VirtualTryOn/VirtualTryOn';
 import APITestPage from './pages/APITest/APITestPage';
 import PaymentSuccessPage from './pages/Payment/PaymentSuccessPage';
 import PaymentCancelPage from './pages/Payment/PaymentCancelPage';
+import RatingPage from './pages/Ratings/RatingPage';
 
 // Contexts
 import { AuthProvider } from './context/AuthContext';
@@ -88,6 +89,7 @@ function App() {
                   <Route path="/api-test" element={<APITestPage />} />
                   <Route path="/payment/success" element={<PaymentSuccessPage />} />
                   <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+                  <Route path="/ratings" element={<RatingPage />} />
                 </Routes>
               </Layout>
             </div>
