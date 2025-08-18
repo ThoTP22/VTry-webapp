@@ -1,0 +1,162 @@
+/* Virtual Try-On Luxury Styles */
+
+.luxury-steps .ant-steps-item-process .ant-steps-item-icon {
+  background-color: #d4af37 !important;
+  border-color: #d4af37 !important;
+}
+
+.luxury-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+  color: #d4af37 !important;
+}
+
+.luxury-steps .ant-steps-item-finish .ant-steps-item-icon {
+  background-color: #ffffff !important;
+  border-color: #d4af37 !important;
+}
+
+.luxury-steps .ant-steps-item-title {
+  color: #000000 !important;
+  font-weight: 500 !important;
+  font-size: 16px !important;
+}
+
+.luxury-steps .ant-steps-item-description {
+  color: #666666 !important;
+}
+
+.luxury-card {
+  border: none !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.luxury-product-selector {
+  border: 2px solid transparent !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer;
+}
+
+.luxury-product-selector:hover {
+  border-color: #d4af37 !important;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+.luxury-product-selector.selected {
+  border-color: #d4af37 !important;
+  background-color: #f9f9f9 !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1) !important;
+}
+
+.luxury-product-selector .ant-card-cover img {
+  transition: transform 0.3s ease;
+}
+
+.luxury-product-selector:hover .ant-card-cover img {
+  transform: scale(1.05);
+}
+
+/* Modal styling */
+.luxury-modal .ant-modal-content {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.luxury-modal .ant-modal-header {
+  background: linear-gradient(135deg, #000000 0%, #2c2c2c 100%);
+  border-bottom: none;
+  padding: 24px 32px;
+}
+
+.luxury-modal .ant-modal-title {
+  color: #ffffff !important;
+  font-size: 20px !important;
+  font-weight: 300 !important;
+  font-family: 'Playfair Display', serif !important;
+}
+
+.luxury-modal .ant-modal-body {
+  padding: 32px;
+}
+
+.luxury-modal .ant-modal-footer {
+  border-top: 1px solid #f0f0f0;
+  padding: 20px 32px;
+}
+
+/* Camera preview styling */
+.luxury-modal video {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Button hover effects */
+.ant-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.ant-btn:hover {
+  transform: translateY(-2px);
+}
+
+.ant-btn-primary:hover {
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.3) !important;
+}
+
+/* Spinning animation for processing */
+.ant-spin-dot {
+  color: #d4af37 !important;
+}
+
+/* Progress indicator */
+.luxury-steps .ant-steps-item-wait .ant-steps-item-icon {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+}
+
+.luxury-steps .ant-steps-item-wait .ant-steps-item-icon > .ant-steps-icon {
+  color: #8c8c8c !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .luxury-steps {
+    margin-bottom: 32px;
+  }
+  
+  .luxury-steps .ant-steps-item-title {
+    font-size: 14px !important;
+  }
+  
+  .luxury-card {
+    margin-bottom: 24px;
+  }
+  
+  .luxury-modal {
+    width: 90% !important;
+    max-width: 500px !important;
+  }
+}
+
+/* Animation for result reveal */
+@keyframes resultReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.luxury-card:has([alt="Try-on result"]) {
+  animation: resultReveal 0.8s ease-out;
+}
+
+/* Gradient overlay for hero section */
+.bg-gradient-to-br {
+  background: linear-gradient(135deg, #000000 0%, #2c2c2c 50%, #000000 100%);
+}

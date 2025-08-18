@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  backend:
+    image: andyninety9/abda-backend:development-v0.0.0
+    container_name: abda-backend
+    ports:
+      - '5194:5194'
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - abda-network
+
+networks:
+  abda-network:
+    driver: bridge
