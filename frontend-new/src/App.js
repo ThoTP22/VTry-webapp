@@ -24,6 +24,7 @@ import APITestPage from './pages/APITest/APITestPage';
 import PaymentSuccessPage from './pages/Payment/PaymentSuccessPage';
 import PaymentCancelPage from './pages/Payment/PaymentCancelPage';
 import RatingPage from './pages/Ratings/RatingPage';
+import { OrdersPage } from './pages/Orders';
 
 // Contexts
 import { AuthProvider } from './context/AuthContext';
@@ -89,6 +90,22 @@ function App() {
                   <Route path="/api-test" element={<APITestPage />} />
                   <Route path="/payment/success" element={<PaymentSuccessPage />} />
                   <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+                  <Route 
+                    path="/orders" 
+                    element={
+                      <ProtectedRoute>
+                        <OrdersPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/orders/:id" 
+                    element={
+                      <ProtectedRoute>
+                        <OrdersPage />
+                      </ProtectedRoute>
+                    } 
+                  />
                   <Route path="/ratings" element={<RatingPage />} />
                 </Routes>
               </Layout>

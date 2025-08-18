@@ -42,7 +42,11 @@ const PaymentSuccessPage = () => {
     console.log('📌 PaymentSuccessPage - URL params:', { orderId, paymentId, search: location.search });
     
     if (!orderId) {
-      setError('Order ID not found');
+      console.warn('⚠️ PaymentSuccessPage - No order_id in URL, redirecting to orders page');
+      setError('Order ID not found - redirecting to orders page');
+      setTimeout(() => {
+        navigate('/orders');
+      }, 2000);
       setLoading(false);
       return;
     }
@@ -92,7 +96,11 @@ const PaymentSuccessPage = () => {
   };
 
   const handleViewOrder = () => {
-    navigate('/orders');
+    if (orderDetails?._id) {
+      navigate(`/orders/${orderDetails._id}`);
+    } else {
+      navigate('/orders');
+    }
   };
 
   const handleDownloadReceipt = () => {

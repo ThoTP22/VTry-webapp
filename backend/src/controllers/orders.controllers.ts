@@ -84,8 +84,10 @@ export const getUserOrdersController = async (req: Request, res: Response, next:
 
     res.json({
       message: ORDERS_MESSAGES.GET_ORDERS_SUCCESS,
-      result: result.orders,
-      pagination: result.pagination
+      result: {
+        orders: result.orders,
+        pagination: result.pagination
+      }
     })
   } catch (error) {
     next(error)
@@ -99,8 +101,10 @@ export const getAllOrdersController = async (req: Request, res: Response, next: 
 
     res.json({
       message: ORDERS_MESSAGES.GET_ORDERS_SUCCESS,
-      result: result.orders,
-      pagination: result.pagination
+      result: {
+        orders: result.orders,
+        pagination: result.pagination
+      }
     })
   } catch (error) {
     next(error)

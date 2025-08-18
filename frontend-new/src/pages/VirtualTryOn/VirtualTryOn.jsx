@@ -367,7 +367,15 @@ const VirtualTryOn = () => {
   return (
     <div className="min-h-screen bg-luxury-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-luxury-black via-luxury-darkgrey to-luxury-black text-luxury-white py-20">
+      <div className="w-full bg-gradient-to-br from-luxury-black via-luxury-darkgrey to-luxury-black text-luxury-white py-20" 
+           style={{
+             width: '100vw',
+             position: 'relative',
+             left: '50%',
+             right: '50%',
+             marginLeft: '-50vw',
+             marginRight: '-50vw'
+           }}>
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-6">
             <div className="flex justify-center">

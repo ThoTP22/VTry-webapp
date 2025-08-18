@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { ObjectId } from 'mongodb'
 import {
   createPaymentController,
   getPaymentStatusController,
@@ -16,6 +17,8 @@ import {
   requireAdminForPayments
 } from '~/middlewares/payments.middlewares'
 import { accessTokenValidator } from '~/middlewares/users.middlewares'
+import orderService from '~/services/orders.services'
+import { OrderStatus } from '~/constants/enums'
 
 const paymentRouter = Router()
 
@@ -72,6 +75,55 @@ paymentRouter.post(
  * Body: PaymentWebhookData
  */
 paymentRouter.post('/webhook', verifyPayOSWebhook, paymentWebhookController)
+
+/**
+ * Description: Manually update payment status (for testing)
+ * Path: /update-status/:order_code
+ * Method: POST
+ * Header: { Authorization: Bearer <access_token> }
+ * Body: { status: string }
+ */
+paymentRouter.post('/update-status/:order_code', accessTokenValidator, async (req, res) => {
+  try {
+    const { order_code } = req.params
+    const { status } = req.body
+    const { user_id } = req.decoded_authorization!
+
+    // Get order from database
+    const order = await orderService.getOrderByPayOSCode(parseInt(order_code), new ObjectId(user_id))
+
+    if (!order) {
+      return res.status(404).json({
+        message: 'Order not found'
+      })
+    }
+
+    // Update payment status
+    await orderService.updateOrderPaymentInfo(new ObjectId(order._id!.toString()), {
+      status: status as any,
+      paid_at: status === 'completed' ? new Date() : undefined
+    })
+
+    // If payment is completed, update order status
+    if (status === 'completed') {
+      await orderService.updateOrderStatus(new ObjectId(order._id!.toString()), OrderStatus.Confirmed)
+    }
+
+    res.json({
+      message: 'Payment status updated successfully',
+      result: {
+        order_id: order._id,
+        order_code: parseInt(order_code),
+        status: status
+      }
+    })
+  } catch (error: any) {
+    res.status(500).json({
+      message: 'Error updating payment status',
+      error: error.message
+    })
+  }
+})
 
 /**
  * Description: Get user's payment history

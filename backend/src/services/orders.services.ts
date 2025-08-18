@@ -136,6 +136,10 @@ class OrderService {
   async getUserOrders(userId: ObjectId, query: GetOrdersQuery = {}) {
     const { status, page = 1, limit = 10, sort = 'created_at', order = 'desc', from_date, to_date } = query
 
+    // Ensure page and limit are numbers
+    const pageNum = parseInt(page.toString()) || 1
+    const limitNum = parseInt(limit.toString()) || 10
+
     const filter: any = { user_id: userId }
 
     if (status) {
@@ -155,26 +159,30 @@ class OrderService {
     const sortOptions: any = {}
     sortOptions[sort] = order === 'asc' ? 1 : -1
 
-    const skip = (page - 1) * limit
+    const skip = (pageNum - 1) * limitNum
 
     const [orders, total] = await Promise.all([
-      this.orders.find(filter).sort(sortOptions).skip(skip).limit(limit).toArray(),
+      this.orders.find(filter).sort(sortOptions).skip(skip).limit(limitNum).toArray(),
       this.orders.countDocuments(filter)
     ])
 
     return {
       orders,
       pagination: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
-        pages: Math.ceil(total / limit)
+        pages: Math.ceil(total / limitNum)
       }
     }
   }
 
   async getAllOrders(query: GetOrdersQuery = {}) {
     const { status, page = 1, limit = 10, sort = 'created_at', order = 'desc', from_date, to_date } = query
+
+    // Ensure page and limit are numbers
+    const pageNum = parseInt(page.toString()) || 1
+    const limitNum = parseInt(limit.toString()) || 10
 
     const filter: any = {}
 
@@ -195,20 +203,20 @@ class OrderService {
     const sortOptions: any = {}
     sortOptions[sort] = order === 'asc' ? 1 : -1
 
-    const skip = (page - 1) * limit
+    const skip = (pageNum - 1) * limitNum
 
     const [orders, total] = await Promise.all([
-      this.orders.find(filter).sort(sortOptions).skip(skip).limit(limit).toArray(),
+      this.orders.find(filter).sort(sortOptions).skip(skip).limit(limitNum).toArray(),
       this.orders.countDocuments(filter)
     ])
 
     return {
       orders,
       pagination: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
-        pages: Math.ceil(total / limit)
+        pages: Math.ceil(total / limitNum)
       }
     }
   }

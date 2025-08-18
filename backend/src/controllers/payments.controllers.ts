@@ -175,10 +175,21 @@ export const cancelPaymentController = async (req: Request, res: Response, next:
 // PayOS Webhook handler
 export const paymentWebhookController = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.log('🔔 PayOS Webhook received:', JSON.stringify(req.body, null, 2))
+    
     const webhookData = req.body as PaymentWebhookData
 
     // Verify webhook signature
-    const verifiedData = payOSService.verifyPaymentWebhookData(webhookData)
+    let verifiedData
+    try {
+      verifiedData = payOSService.verifyPaymentWebhookData(webhookData)
+      console.log('✅ Webhook verification successful:', verifiedData)
+    } catch (error) {
+      console.error('❌ Webhook verification failed:', error)
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        message: PAYMENTS_MESSAGES.INVALID_WEBHOOK_SIGNATURE
+      })
+    }
 
     if (!verifiedData) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -187,19 +198,30 @@ export const paymentWebhookController = async (req: Request, res: Response, next
     }
 
     const { orderCode, amount, description, reference, transactionDateTime } = verifiedData.data
+    console.log('🔍 Processing webhook for order code:', orderCode)
 
     // Find order by PayOS order code
     const order = await orderService.getOrderByPayOSCode(orderCode)
 
     if (!order) {
-      console.error(`Order not found for PayOS order code: ${orderCode}`)
+      console.error(`❌ Order not found for PayOS order code: ${orderCode}`)
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         message: PAYMENTS_MESSAGES.ORDER_NOT_FOUND
       })
     }
 
+    console.log('✅ Order found:', {
+      order_id: order._id,
+      order_number: order.order_number,
+      current_payment_status: order.payment_info.status
+    })
+
     // Update payment status based on webhook data
     const paymentStatus = payOSService.mapPaymentStatus(verifiedData.data.code)
+    console.log('📊 Mapping PayOS status:', {
+      payos_code: verifiedData.data.code,
+      mapped_status: paymentStatus
+    })
 
     await orderService.updateOrderPaymentInfo(new ObjectId(order._id!.toString()), {
       status: paymentStatus as any,
@@ -209,11 +231,15 @@ export const paymentWebhookController = async (req: Request, res: Response, next
 
     // If payment is completed, update order status
     if (paymentStatus === 'completed') {
+      console.log('💰 Payment completed, updating order status to confirmed')
       await orderService.updateOrderStatus(new ObjectId(order._id!.toString()), OrderStatus.Confirmed)
     } else if (paymentStatus === 'cancelled' || paymentStatus === 'expired') {
+      console.log('❌ Payment failed/cancelled, updating order status to cancelled')
       await orderService.updateOrderStatus(new ObjectId(order._id!.toString()), OrderStatus.Cancelled)
     }
 
+    console.log('✅ Webhook processed successfully')
+    
     // Send response to PayOS
     res.json({
       error: 0,
@@ -224,7 +250,7 @@ export const paymentWebhookController = async (req: Request, res: Response, next
       }
     })
   } catch (error) {
-    console.error('Payment webhook error:', error)
+    console.error('❌ Payment webhook error:', error)
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       error: 1,
       message: 'Webhook processing failed',

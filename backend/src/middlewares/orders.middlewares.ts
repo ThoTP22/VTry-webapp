@@ -78,8 +78,8 @@ export const cancelOrderValidator = [
 // Validation for getting orders query
 export const getOrdersQueryValidator = [
   query('status').optional().isIn(Object.values(OrderStatus)).withMessage(ORDERS_MESSAGES.INVALID_ORDER_STATUS),
-  query('page').optional().isInt({ min: 1 }).withMessage(ORDERS_MESSAGES.INVALID_PAGE),
-  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage(ORDERS_MESSAGES.INVALID_LIMIT),
+  query('page').optional().isInt({ min: 1 }).toInt().withMessage(ORDERS_MESSAGES.INVALID_PAGE),
+  query('limit').optional().isInt({ min: 1, max: 100 }).toInt().withMessage(ORDERS_MESSAGES.INVALID_LIMIT),
   query('sort')
     .optional()
     .isIn(['created_at', 'updated_at', 'total_amount'])

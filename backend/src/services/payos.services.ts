@@ -109,6 +109,8 @@ class PayOSService {
 
       const orderCode = this.generateOrderCode()
 
+      const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000'
+      
       const paymentData: CreatePaymentLinkData = {
         orderCode,
         amount: Math.round(order.total_amount), // PayOS requires integer amount
@@ -118,8 +120,8 @@ class PayOSService {
           quantity: item.quantity || 1,
           price: Math.round(item.unit_price || 0)
         })),
-        returnUrl: process.env.PAYOS_RETURN_URL || 'http://localhost:3000/payment/success',
-        cancelUrl: process.env.PAYOS_CANCEL_URL || 'http://localhost:3000/payment/cancel'
+        returnUrl: `${baseUrl}/payment/success?order_id=${order._id}`,
+        cancelUrl: `${baseUrl}/payment/cancel?order_id=${order._id}`
       }
 
       console.log('PayOS payment data:', paymentData)
