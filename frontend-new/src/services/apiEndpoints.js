@@ -96,6 +96,13 @@ const API_ENDPOINTS = {
     IMAGE: (imageUrl) => `${getBackendUrl()}/proxy/image?url=${encodeURIComponent(imageUrl)}`,
   },
 
+  // Ratings endpoints
+  RATINGS: {
+    get CREATE() { return `${getBackendUrl()}/ratings/create`; },
+    get GET_ALL() { return `${getBackendUrl()}/ratings/all`; },
+    DELETE: (id) => `${getBackendUrl()}/ratings/delete/${id}`,
+  },
+
   // Base URL for constructing proxy URLs
   get BASE_URL() { return getBackendUrl().replace('/api', ''); },
 
