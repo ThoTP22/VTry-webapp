@@ -14,7 +14,7 @@ export interface TryonOneStopReqBody {
 
 export interface TryonOneStopRequest extends Request {
   file: Express.Multer.File
-  body: TryonOneStopReqBody & any
+  body: TryonOneStopReqBody
 }
 
 // Legacy interface for backward compatibility
