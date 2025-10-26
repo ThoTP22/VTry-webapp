@@ -139,7 +139,8 @@ const RegisterPage = () => {
             label="Password"
             rules={[
               { required: true, message: 'Please enter the password!' },
-              { min: 6, message: 'Password must be at least 6 characters!' }
+              { min: 6, message: 'Password must be at least 6 characters!' },
+              { pattern: /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@]).*$/, message: 'Password must contain at least one digit, one lowercase letter, one uppercase letter, and the @ symbol!' }
             ]}
           >
             <Input.Password 
