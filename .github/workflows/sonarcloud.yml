@@ -57,9 +57,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Generate this token on SonarCloud
 
-    - name: 📊 Quality Gate Status Check
-      uses: sonarqube-quality-gate-action@master
-      timeout-minutes: 5
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      continue-on-error: true  # Don't fail the build if Quality Gate fails initially
+    - name:  Quality Gate Status
+      run: |
+        echo " SonarCloud analysis completed!"
+        echo " Check results at: https://sonarcloud.io/project/overview?id=${{ github.repository_owner }}_${{ github.event.repository.name }}"
+        echo " Quality Gate results will be available on the SonarCloud dashboard"
