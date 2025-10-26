@@ -30,12 +30,21 @@ const proxyRouter = Router()
  *       500:
  *         description: Error fetching image
  */
+const schemesList = ["http:", "https:"];
+const domainsList = ["trusted1.example.com", "trusted2.example.com"];
+
 proxyRouter.get('/image', async (req, res) => {
   try {
     const { url } = req.query
 
     if (!url || typeof url !== 'string') {
       return res.status(400).json({ error: 'URL parameter is required' })
+    }
+
+    const parsedUrl = new URL(url);
+
+    if (!schemesList.includes(parsedUrl.protocol) || !domainsList.includes(parsedUrl.hostname)) {
+      return res.status(400).json({ error: 'Invalid URL - only trusted domains allowed' })
     }
 
     console.log('Proxying image request for:', url)
