@@ -134,7 +134,7 @@ export const deleteImageByUrlController = async (
 export const getPresignedUrlController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { key } = req.params
-    const expiresIn = parseInt(req.query.expiresIn as string) || 3600 // Default 1 hour
+    const expiresIn = parseInt(req.query.expiresIn as string, 10) || 3600 // Default 1 hour
 
     if (!key) {
       return res.status(400).json({

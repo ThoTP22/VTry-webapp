@@ -1,31 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  Button, 
-  Upload, 
-  Image, 
-  Space, 
-  Modal, 
-  message, 
-  Popconfirm, 
-  Row, 
-  Col, 
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  Button,
+  Upload,
+  Image,
+  Space,
+  Modal,
+  message,
+  Popconfirm,
+  Row,
+  Col,
   Progress,
   Tag,
   Input,
   Select,
-  Divider
-} from 'antd';
-import { 
-  UploadOutlined, 
-  DeleteOutlined, 
-  EyeOutlined, 
+  Divider,
+} from "antd";
+import {
+  UploadOutlined,
+  DeleteOutlined,
+  EyeOutlined,
   DownloadOutlined,
   SearchOutlined,
-  FilterOutlined
-} from '@ant-design/icons';
-import { ImagesAPI } from '../../api';
-import API_ENDPOINTS from '../../services/apiEndpoints';
+  FilterOutlined,
+} from "@ant-design/icons";
+import { ImagesAPI } from "../../api";
+import API_ENDPOINTS from "../../services/apiEndpoints";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -36,9 +36,9 @@ const ImageManager = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewVisible, setPreviewVisible] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
+  const [previewImage, setPreviewImage] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
   const [selectedImages, setSelectedImages] = useState([]);
 
   // Load images from API
@@ -54,7 +54,7 @@ const ImageManager = () => {
       // setImages(response.data.result || []);
       setImages([]); // Empty for now until API is implemented
     } catch (error) {
-      message.error('Lỗi khi tải danh sách ảnh: ' + error.message);
+      message.error("Lỗi khi tải danh sách ảnh: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -64,10 +64,10 @@ const ImageManager = () => {
     try {
       setUploading(true);
       setUploadProgress(0);
-      
+
       // Simulate upload progress
       const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
+        setUploadProgress((prev) => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return 90;
@@ -77,21 +77,21 @@ const ImageManager = () => {
       }, 200);
 
       const response = await ImagesAPI.uploadImage(file);
-      
+
       if (response.success) {
         const newImage = {
           id: Date.now(),
           ...response.data.result,
           uploadedAt: new Date(),
-          category: 'products'
+          category: "products",
         };
-        
-        setImages(prev => [newImage, ...prev]);
-        message.success('Hình ảnh đã được tải lên thành công!');
+
+        setImages((prev) => [newImage, ...prev]);
+        message.success("Hình ảnh đã được tải lên thành công!");
         setUploadProgress(100);
       }
     } catch (error) {
-      message.error('Lỗi khi tải lên hình ảnh: ' + error.message);
+      message.error("Lỗi khi tải lên hình ảnh: " + error.message);
     } finally {
       setTimeout(() => {
         setUploading(false);
@@ -105,39 +105,40 @@ const ImageManager = () => {
     try {
       setUploading(true);
       setUploadProgress(0);
-      
+
       const totalFiles = files.length;
       let completedFiles = 0;
-      
+
       const uploadPromises = files.map(async (file) => {
         try {
           const response = await ImagesAPI.uploadImage(file);
           completedFiles++;
           setUploadProgress((completedFiles / totalFiles) * 100);
-          
+
           if (response.success) {
             return {
               id: Date.now() + Math.random(),
               ...response.data.result,
               uploadedAt: new Date(),
-              category: 'products'
+              category: "products",
             };
           }
         } catch (error) {
-          console.error('Upload error for file:', file.name, error);
+          console.error("Upload error for file:", file.name, error);
         }
       });
 
       const results = await Promise.all(uploadPromises);
       const successfulUploads = results.filter(Boolean);
-      
+
       if (successfulUploads.length > 0) {
-        setImages(prev => [...successfulUploads, ...prev]);
-        message.success(`${successfulUploads.length} hình ảnh đã được tải lên thành công!`);
+        setImages((prev) => [...successfulUploads, ...prev]);
+        message.success(
+          `${successfulUploads.length} hình ảnh đã được tải lên thành công!`
+        );
       }
-      
     } catch (error) {
-      message.error('Lỗi khi tải lên hình ảnh: ' + error.message);
+      message.error("Lỗi khi tải lên hình ảnh: " + error.message);
     } finally {
       setTimeout(() => {
         setUploading(false);
@@ -150,28 +151,32 @@ const ImageManager = () => {
   const handleDeleteImage = async (image) => {
     try {
       await ImagesAPI.deleteImage(image.key);
-      
-      setImages(prev => prev.filter(img => img.id !== image.id));
-      message.success('Hình ảnh đã được xóa thành công!');
+
+      setImages((prev) => prev.filter((img) => img.id !== image.id));
+      message.success("Hình ảnh đã được xóa thành công!");
     } catch (error) {
-      message.error('Lỗi khi xóa hình ảnh: ' + error.message);
+      message.error("Lỗi khi xóa hình ảnh: " + error.message);
     }
   };
 
   const handleDeleteMultiple = async () => {
     try {
-      const deletePromises = selectedImages.map(imageId => {
-        const image = images.find(img => img.id === imageId);
+      const deletePromises = selectedImages.map((imageId) => {
+        const image = images.find((img) => img.id === imageId);
         return ImagesAPI.deleteImage(image.key);
       });
-      
+
       await Promise.all(deletePromises);
-      
-      setImages(prev => prev.filter(img => !selectedImages.includes(img.id)));
+
+      setImages((prev) =>
+        prev.filter((img) => !selectedImages.includes(img.id))
+      );
       setSelectedImages([]);
-      message.success(`${selectedImages.length} hình ảnh đã được xóa thành công!`);
+      message.success(
+        `${selectedImages.length} hình ảnh đã được xóa thành công!`
+      );
     } catch (error) {
-      message.error('Lỗi khi xóa hình ảnh: ' + error.message);
+      message.error("Lỗi khi xóa hình ảnh: " + error.message);
     }
   };
 
@@ -181,46 +186,51 @@ const ImageManager = () => {
   };
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const formatDate = (date) => {
-    return new Intl.DateTimeFormat('vi-VN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Intl.DateTimeFormat("vi-VN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   };
 
   const getMimeTypeColor = (mimeType) => {
-    if (mimeType.includes('jpeg') || mimeType.includes('jpg')) return 'green';
-    if (mimeType.includes('png')) return 'blue';
-    if (mimeType.includes('gif')) return 'purple';
-    if (mimeType.includes('webp')) return 'orange';
-    return 'default';
+    if (mimeType.includes("jpeg") || mimeType.includes("jpg")) return "green";
+    if (mimeType.includes("png")) return "blue";
+    if (mimeType.includes("gif")) return "purple";
+    if (mimeType.includes("webp")) return "orange";
+    return "default";
   };
 
-  const filteredImages = images.filter(image => {
-    const matchesSearch = image.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         image.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || image.category === filterType;
+  const filteredImages = images.filter((image) => {
+    const matchesSearch =
+      image.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      image.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterType === "all" || image.category === filterType;
     return matchesSearch && matchesFilter;
   });
 
-  const categories = [...new Set(images.map(img => img.category))];
+  const categories = [...new Set(images.map((img) => img.category))];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Quản lý hình ảnh</h1>
-          <p className="text-gray-600">Tải lên, quản lý và tổ chức hình ảnh trong hệ thống</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Quản lý hình ảnh
+          </h1>
+          <p className="text-gray-600">
+            Tải lên, quản lý và tổ chức hình ảnh trong hệ thống
+          </p>
         </div>
 
         {/* Upload Section */}
@@ -228,12 +238,12 @@ const ImageManager = () => {
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="flex-1">
               <h3 className="text-lg font-semibold mb-4">Tải lên hình ảnh</h3>
-              
+
               {uploading && (
                 <div className="mb-4">
-                  <Progress 
-                    percent={uploadProgress} 
-                    status={uploadProgress === 100 ? 'success' : 'active'}
+                  <Progress
+                    percent={uploadProgress}
+                    status={uploadProgress === 100 ? "success" : "active"}
                     strokeColor="#1890ff"
                   />
                   <p className="text-sm text-gray-500 mt-2">
@@ -249,8 +259,8 @@ const ImageManager = () => {
                   beforeUpload={handleSingleUpload}
                   disabled={uploading}
                 >
-                  <Button 
-                    icon={<UploadOutlined />} 
+                  <Button
+                    icon={<UploadOutlined />}
                     size="large"
                     className="w-full"
                     disabled={uploading}
@@ -266,8 +276,8 @@ const ImageManager = () => {
                   multiple
                   disabled={uploading}
                 >
-                  <Button 
-                    icon={<UploadOutlined />} 
+                  <Button
+                    icon={<UploadOutlined />}
                     size="large"
                     className="w-full"
                     disabled={uploading}
@@ -288,17 +298,23 @@ const ImageManager = () => {
               <h3 className="text-lg font-semibold mb-4">Thống kê</h3>
               <div className="space-y-4">
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{images.length}</div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {images.length}
+                  </div>
                   <div className="text-sm text-blue-600">Tổng hình ảnh</div>
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <div className="text-2xl font-bold text-green-600">
-                    {formatFileSize(images.reduce((sum, img) => sum + img.size, 0))}
+                    {formatFileSize(
+                      images.reduce((sum, img) => sum + img.size, 0)
+                    )}
                   </div>
                   <div className="text-sm text-green-600">Tổng dung lượng</div>
                 </div>
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">{categories.length}</div>
+                  <div className="text-2xl font-bold text-purple-600">
+                    {categories.length}
+                  </div>
                   <div className="text-sm text-purple-600">Danh mục</div>
                 </div>
               </div>
@@ -318,7 +334,7 @@ const ImageManager = () => {
                 style={{ width: 300 }}
                 prefix={<SearchOutlined />}
               />
-              
+
               <Select
                 value={filterType}
                 onChange={setFilterType}
@@ -326,7 +342,7 @@ const ImageManager = () => {
                 placeholder="Lọc theo danh mục"
               >
                 <Option value="all">Tất cả</Option>
-                {categories.map(category => (
+                {categories.map((category) => (
                   <Option key={category} value={category}>
                     {category.charAt(0).toUpperCase() + category.slice(1)}
                   </Option>
@@ -365,23 +381,24 @@ const ImageManager = () => {
             <div className="text-center py-12">
               <div className="text-6xl text-gray-300 mb-4">📷</div>
               <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                {searchTerm || filterType !== 'all' ? 'Không tìm thấy hình ảnh' : 'Chưa có hình ảnh nào'}
+                {searchTerm || filterType !== "all"
+                  ? "Không tìm thấy hình ảnh"
+                  : "Chưa có hình ảnh nào"}
               </h3>
               <p className="text-gray-500">
-                {searchTerm || filterType !== 'all' 
-                  ? 'Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc'
-                  : 'Bắt đầu bằng cách tải lên hình ảnh đầu tiên'
-                }
+                {searchTerm || filterType !== "all"
+                  ? "Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc"
+                  : "Bắt đầu bằng cách tải lên hình ảnh đầu tiên"}
               </p>
             </div>
           ) : (
             <Row gutter={[16, 16]}>
-              {filteredImages.map(image => (
+              {filteredImages.map((image) => (
                 <Col xs={24} sm={12} md={8} lg={6} xl={4} key={image.id}>
                   <Card
                     hoverable
                     className="image-card"
-                    bodyStyle={{ padding: '12px' }}
+                    bodyStyle={{ padding: "12px" }}
                     cover={
                       <div className="relative group">
                         <Image
@@ -391,7 +408,7 @@ const ImageManager = () => {
                           fallback="/img/logo.png"
                           preview={false}
                         />
-                        
+
                         {/* Overlay actions */}
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
                           <Space size="small">
@@ -426,9 +443,14 @@ const ImageManager = () => {
                             checked={selectedImages.includes(image.id)}
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setSelectedImages(prev => [...prev, image.id]);
+                                setSelectedImages((prev) => [
+                                  ...prev,
+                                  image.id,
+                                ]);
                               } else {
-                                setSelectedImages(prev => prev.filter(id => id !== image.id));
+                                setSelectedImages((prev) =>
+                                  prev.filter((id) => id !== image.id)
+                                );
                               }
                             }}
                             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
@@ -442,15 +464,21 @@ const ImageManager = () => {
                         <Tag color="blue" className="text-xs">
                           {image.category}
                         </Tag>
-                        <Tag color={getMimeTypeColor(image.mimeType)} className="text-xs">
-                          {image.mimeType.split('/')[1].toUpperCase()}
+                        <Tag
+                          color={getMimeTypeColor(image.mimeType)}
+                          className="text-xs"
+                        >
+                          {image.mimeType.split("/")[1].toUpperCase()}
                         </Tag>
                       </div>
-                      
-                      <div className="text-sm font-medium text-gray-900 truncate" title={image.originalName}>
+
+                      <div
+                        className="text-sm font-medium text-gray-900 truncate"
+                        title={image.originalName}
+                      >
                         {image.originalName}
                       </div>
-                      
+
                       <div className="text-xs text-gray-500 space-y-1">
                         <div>Kích thước: {formatFileSize(image.size)}</div>
                         <div>Ngày tải: {formatDate(image.uploadedAt)}</div>
@@ -476,7 +504,7 @@ const ImageManager = () => {
           <Image
             alt="Preview"
             src={previewImage}
-            style={{ maxWidth: '100%', maxHeight: '70vh' }}
+            style={{ maxWidth: "100%", maxHeight: "70vh" }}
           />
         </div>
       </Modal>

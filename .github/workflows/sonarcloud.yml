@@ -1,0 +1,65 @@
+name: SonarQube Cloud Analysis
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Disable shallow clone for better analysis
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 📦 Install Backend Dependencies  
+      working-directory: ./backend
+      run: npm ci
+
+    - name: 📦 Install Frontend Dependencies
+      working-directory: ./frontend-new  
+      run: npm ci
+
+    - name: 🧪 Run Backend Tests (Optional)
+      working-directory: ./backend
+      run: |
+        if [ -f "package.json" ] && npm run test --if-present -- --coverage --watchAll=false; then
+          echo "✅ Backend tests with coverage completed"
+        else
+          echo "⚠️ No backend tests found or failed, continuing..."
+        fi
+      continue-on-error: true
+
+    - name: 🧪 Run Frontend Tests (Optional)
+      working-directory: ./frontend-new
+      run: |
+        if [ -f "package.json" ] && npm run test --if-present -- --coverage --watchAll=false; then
+          echo "✅ Frontend tests with coverage completed" 
+        else
+          echo "⚠️ No frontend tests found or failed, continuing..."
+        fi
+      continue-on-error: true
+
+    - name: 🔍 SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Generate this token on SonarCloud
+
+    - name: 📊 Quality Gate Status Check
+      uses: sonarqube-quality-gate-action@master
+      timeout-minutes: 5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      continue-on-error: true  # Don't fail the build if Quality Gate fails initially

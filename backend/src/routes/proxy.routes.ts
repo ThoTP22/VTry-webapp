@@ -41,7 +41,7 @@ proxyRouter.get('/image', async (req, res) => {
     console.log('Proxying image request for:', url)
 
     // Fetch the image
-    const response = await axios.get(url, {
+    const response = await axios.get(url, { 
       responseType: 'stream',
       timeout: 30000,
       headers: {
